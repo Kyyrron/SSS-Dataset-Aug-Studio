@@ -1,0 +1,33 @@
+name: Harbour inspection
+description: >
+  Enclosed port basin: wall multipath echoes, anthropic clutter context,
+  strong K-tail clutter, mild motion. The thesis C4 regime.
+instances:
+- family: seabed
+  label: port sediment patchiness
+  instance_id: harb_seabed01
+  enabled: true
+  probability: 0.8
+  strength: 1.0
+  params: {reflectivity_shift_db: 1.0, field_sigma_db: 2.0, field_corr_along_m: 4.0, field_corr_across_m: 2.0, background_only: true}
+- family: multipath
+  label: quay wall echoes
+  instance_id: harb_multi01
+  enabled: true
+  probability: 0.9
+  strength: 1.0
+  params: {wall_enabled: true, wall_distance_m: 12.0, wall_distance_wander_m: 2.0, wall_gain_db: 8.0, wall_side: port, surface_ghost_enabled: true, surface_ghost_gain_db: -12.0}
+- family: platform_motion
+  label: basin maneuvering
+  instance_id: harb_motion01
+  enabled: true
+  probability: 0.8
+  strength: 1.0
+  params: {speed_std_frac: 0.12, yaw_std_deg: 2.5, roll_amp_deg: 2.0, turn_radius_m: 25.0, turn_extent_frac: 0.25}
+- family: speckle
+  label: heavy-tail clutter
+  instance_id: harb_speck01
+  enabled: true
+  probability: 1.0
+  strength: 1.0
+  params: {distribution: k, looks: 3.0, k_shape_nu: 3.0, texture_corr_m: 0.8}

@@ -1,0 +1,26 @@
+name: Fast survey
+description: >
+  High transit speed: along-track stretch/undersampling, stronger yaw wobble,
+  ping dropouts under load, pronounced striping.
+instances:
+- family: platform_motion
+  label: high speed
+  instance_id: fast_motion01
+  enabled: true
+  probability: 1.0
+  strength: 1.0
+  params: {speed_std_frac: 0.25, speed_corr_m: 12.0, yaw_std_deg: 4.0, roll_amp_deg: 3.0, heave_amp_m: 0.1}
+- family: ping_artifacts
+  label: load dropouts
+  instance_id: fast_ping01
+  enabled: true
+  probability: 0.9
+  strength: 1.0
+  params: {dropout_events_per_100_rows: 4.0, dropout_burst_mean: 5.0, dropout_mode: remove, stripe_sigma_db: 1.5, interference_events: 2.0}
+- family: speckle
+  label: reduced looks
+  instance_id: fast_speck01
+  enabled: true
+  probability: 1.0
+  strength: 1.0
+  params: {distribution: rayleigh, looks: 2.0}

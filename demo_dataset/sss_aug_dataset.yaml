@@ -1,0 +1,10 @@
+layout: dual
+shadow_included: true
+intensity_mapping: linear
+meta:
+  altitude_m: 2.0
+  slant_range_m: 30.0
+  speed_mps: 1.5
+  res_along_m: 0.08
+  depth_m: 5.0
+  frequency_khz: 450

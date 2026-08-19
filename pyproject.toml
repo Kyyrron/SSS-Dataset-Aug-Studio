@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sss-aug-studio"
+version = "0.3.0"
+description = "Physics-Informed Side-Scan Sonar Augmentation Studio - a scientific framework for physically plausible SSS dataset augmentation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "USV-SSS Adaptive Survey Project" }]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "opencv-python-headless>=4.8",
+    "pydantic>=2.5",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+gui = ["PySide6-Essentials>=6.6"]
+equations = ["matplotlib>=3.7"]
+dev = ["pytest>=7.4", "pytest-cov"]
+
+[project.scripts]
+sss-aug-studio = "sss_aug_studio.app.main:main"
+sss-aug-generate = "sss_aug_studio.generation.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["sss_aug_studio*"]
+
+[tool.setuptools.package-data]
+sss_aug_studio = [
+    "documentation/encyclopedia/*.md",
+    "documentation/*.bib",
+    "profiles/presets/*.yaml",
+    "gui/*.qss",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

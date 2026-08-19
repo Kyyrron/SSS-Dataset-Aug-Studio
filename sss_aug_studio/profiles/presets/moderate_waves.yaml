@@ -1,0 +1,40 @@
+name: Moderate waves
+description: >
+  Open nearshore with 0.3-0.6 m chop: pronounced roll/heave and yaw wobble,
+  speed fluctuation, heavier speckle, occasional dropouts.
+instances:
+- family: platform_motion
+  label: chop
+  instance_id: wave_motion01
+  enabled: true
+  probability: 1.0
+  strength: 1.0
+  params: {speed_std_frac: 0.15, yaw_std_deg: 3.5, yaw_corr_m: 4.0, roll_amp_deg: 7.0, roll_period_s: 3.5, heave_amp_m: 0.25, heave_period_s: 3.5}
+- family: slant_geometry
+  label: altitude wobble
+  instance_id: wave_slant01
+  enabled: true
+  probability: 0.8
+  strength: 1.0
+  params: {altitude_offset_m: 0.1, altitude_noise_m: 0.12, altitude_noise_corr_m: 4.0}
+- family: radiometric
+  label: gain residual
+  instance_id: wave_radio01
+  enabled: true
+  probability: 0.8
+  strength: 1.0
+  params: {spread_residual_db_per_decade: 4.0, absorption_residual_db_per_m: 0.03, altitude_factor: 1.15}
+- family: speckle
+  label: K clutter
+  instance_id: wave_speck01
+  enabled: true
+  probability: 1.0
+  strength: 1.0
+  params: {distribution: k, looks: 3.0, k_shape_nu: 5.0, texture_corr_m: 0.6}
+- family: ping_artifacts
+  label: link dropouts
+  instance_id: wave_ping01
+  enabled: true
+  probability: 0.6
+  strength: 1.0
+  params: {dropout_events_per_100_rows: 2.0, dropout_burst_mean: 4.0, dropout_mode: hold, stripe_sigma_db: 1.2}

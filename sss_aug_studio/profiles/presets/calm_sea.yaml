@@ -1,0 +1,33 @@
+name: Calm sea
+description: >
+  Sheltered basin, near-flat water: light speckle, mild gain residuals,
+  minimal platform motion. Baseline variability for good-weather sessions.
+instances:
+- family: seabed
+  label: mild patchiness
+  instance_id: calm_seabed01
+  enabled: true
+  probability: 0.5
+  strength: 1.0
+  params: {reflectivity_shift_db: 0.0, field_sigma_db: 1.0, field_corr_along_m: 6.0, field_corr_across_m: 3.0, background_only: true}
+- family: platform_motion
+  label: calm drift
+  instance_id: calm_motion01
+  enabled: true
+  probability: 0.7
+  strength: 1.0
+  params: {speed_std_frac: 0.05, yaw_std_deg: 0.8, roll_amp_deg: 1.0, roll_period_s: 5.0, heave_amp_m: 0.02, turn_radius_m: 0.0}
+- family: radiometric
+  label: light TVG residual
+  instance_id: calm_radio01
+  enabled: true
+  probability: 0.7
+  strength: 1.0
+  params: {spread_residual_db_per_decade: 2.0, absorption_residual_db_per_m: 0.01, gain_offset_db: 0.0, altitude_factor: 1.05}
+- family: speckle
+  label: fine speckle
+  instance_id: calm_speck01
+  enabled: true
+  probability: 0.9
+  strength: 1.0
+  params: {distribution: rayleigh, looks: 6.0}
