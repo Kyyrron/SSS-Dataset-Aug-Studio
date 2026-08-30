@@ -11,9 +11,8 @@ from importlib import resources
 from pathlib import Path
 
 import yaml
-from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 from ..core.pipeline import AugmentationInstance, AugmentationPipeline
 
@@ -23,29 +22,20 @@ __all__ = ["PipelineProfile", "load_profile", "save_profile", "bundled_presets"]
 class PipelineProfile(BaseModel):
     """Named pipeline configuration.
 
-    Since v0.3.0 stochastic laws live **on the instances themselves**
+    Stochastic laws live **on the instances themselves**
     (``AugmentationInstance.distributions``): a profile is de facto
-    deterministic when no instance declares a law.  The legacy profile-level
-    ``mode``/``distributions`` fields are still accepted and migrated into
-    the instances on load (deprecated).
+    deterministic when no instance declares a law.  There is no profile-level
+    execution mode.  ``extra="forbid"`` means a profile carrying unknown
+    top-level keys — including the profile-level ``mode``/``distributions``
+    fields written before v0.4.0 — is rejected by name rather than loaded
+    with its laws silently dropped.
     """
 
     model_config = ConfigDict(extra="forbid")
 
     name: str
     description: str = ""
-    mode: Literal["deterministic", "stochastic"] = "deterministic"  # deprecated (v0.2.x)
     instances: list[AugmentationInstance] = Field(default_factory=list)
-    distributions: dict[str, dict] = Field(default_factory=dict)     # deprecated (v0.2.x)
-
-    @model_validator(mode="after")
-    def _migrate_legacy_distributions(self) -> "PipelineProfile":
-        if self.mode == "stochastic" and self.distributions:
-            by_id = {i.instance_id: i for i in self.instances}
-            for iid, dists in self.distributions.items():
-                if iid in by_id and not by_id[iid].distributions:
-                    by_id[iid].distributions = dict(dists)
-        return self
 
     @property
     def is_stochastic(self) -> bool:
@@ -55,7 +45,7 @@ class PipelineProfile(BaseModel):
         return AugmentationPipeline([i.model_copy(deep=True) for i in self.instances])
 
     @classmethod
-    def from_pipeline(cls, name: str, description: str, pipeline: AugmentationPipeline, **_legacy) -> "PipelineProfile":
+    def from_pipeline(cls, name: str, description: str, pipeline: AugmentationPipeline) -> "PipelineProfile":
         return cls(name=name, description=description,
                    instances=[i.model_copy(deep=True) for i in pipeline.instances])
 

@@ -16,7 +16,7 @@ pydantic v2, PyYAML; GUI extra adds PySide6. Python ≥ 3.10.
 ## 2. Project structure (what you'll touch)
 
 ```
-demo_dataset/            ready-to-open 3-image YOLO demo
+demo_dataset/            ready-to-open 4-image YOLO demo (synthetic)
 sss_aug_studio/          the package (core / physics / augmentations / gui / …)
 docs/                    reference documentation
 PROJECT_OVERVIEW.md      map of everything
@@ -29,7 +29,8 @@ AUGMENTATION_STRATEGIES.md   per-family science + code
 sss-aug-studio demo_dataset
 ```
 
-You should see the demo dual-side shipwreck waterfall. Verify: `pytest`
+You should see a dual-side waterfall: a dark water column down the centre,
+the seabed brightening away from it on both sides. Verify: `pytest`
 (37 tests) if you installed the dev extra.
 
 ## 4. Available commands

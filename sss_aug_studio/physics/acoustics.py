@@ -45,7 +45,7 @@ def francois_garrison_alpha_db_per_km(
     At 450 kHz in temperate shallow seawater this returns ~100-120 dB/km,
     i.e. ~0.1 dB/m — the dominant range-dependent loss for the Omniscan 450.
     """
-    t, s, d = temp_c, salinity_psu, depth_m / 1000.0  # depth in km
+    t, s = temp_c, salinity_psu
     f = f_khz
     c = 1412.0 + 3.21 * t + 1.19 * s + 0.0167 * depth_m  # sound speed (m/s)
     theta = t + 273.0

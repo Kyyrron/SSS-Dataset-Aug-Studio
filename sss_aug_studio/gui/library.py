@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Callable, Optional
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QFrame,
@@ -97,7 +97,7 @@ class LibraryPanel(QScrollArea):
             head = QLabel(f"<b>{section_title}</b>")
             head.setStyleSheet("color:#5b9bd5; margin-top:6px;")
             lay.addWidget(head)
-            for key, fam_cls in members.items():
+            for fam_cls in members.values():
                 lay.addWidget(_ScienceCard(fam_cls, self._add_instance, self.open_doc.emit, self._toggle_family))
         lay.addStretch()
 

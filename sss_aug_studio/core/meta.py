@@ -1,6 +1,6 @@
 """Acquisition metadata attached to every sonar image.
 
-Physical-unit parameterization (validated design decision #2): whenever the
+Physical-unit parameterization: whenever the
 acquisition pipeline (BlueBoat + Omniscan 450 + FBR altitude estimation)
 provides metadata, augmentations operate in real physical units (m, m/s, deg,
 dB, Hz).  When metadata is absent the studio falls back to *normalized mode*
@@ -29,8 +29,13 @@ FALLBACK_DEPTH_M = 4.0
 class AcquisitionMeta(BaseModel):
     """Physical acquisition context for one sonar image.
 
-    All fields are optional except ``layout``; :meth:`resolved` returns a copy
-    with fallbacks filled in and ``is_physical`` recording provenance.
+    All fields are optional except ``layout``.  The per-field
+    ``resolved_*()`` accessors — :meth:`resolved_altitude_m`,
+    :meth:`resolved_depth_m`, :meth:`resolved_speed_mps`,
+    :meth:`resolved_res_along_m` and :meth:`resolved_res_across_m` — return
+    the documented fallback for any field left unset, and :attr:`is_physical`
+    reports whether real acquisition metadata or those normalized-mode
+    fallbacks are in force.
     """
 
     model_config = ConfigDict(extra="ignore")

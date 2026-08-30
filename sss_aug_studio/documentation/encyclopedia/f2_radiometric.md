@@ -44,7 +44,8 @@ altitudes.
 
 ## 6. Limitations
 Flat-seabed grazing angles; the dB correction acts on approximately linear
-8-bit intensities (decision #4); no azimuthal beam-pattern effects.
+8-bit intensities (the declared intensity mapping, inverted on load); no
+azimuthal beam-pattern effects.
 
 ## 7. Validation
 Mean-intensity-vs-range profiles: compare real images recorded at different

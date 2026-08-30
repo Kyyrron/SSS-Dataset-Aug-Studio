@@ -5,3 +5,18 @@ data/
 metadata.yaml
 acados_ocp.json
 c_generated_code/
+
+# Python packaging and tooling artifacts
+*.egg-info/
+build/
+dist/
+.venv*/
+.pytest_cache/
+.ruff_cache/
+
+# Reproducibility gate scratch output (tools/repro_gate.py)
+.repro_gate/
+
+.githooks/
+demo_dataset/
+.claude/specs/

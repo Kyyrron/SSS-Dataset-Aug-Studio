@@ -1,5 +1,9 @@
 # Architecture update — v0.3.0
 
+> **Historical.** Superseded by `docs/architecture.md`, which describes the
+> current release. Kept as a record of what changed at this release; not
+> maintained.
+
 Delta only. Two corrections driven by usage feedback.
 
 ## 1. Preview rows: independent, user-resizable heights

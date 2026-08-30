@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from sss_aug_studio.core.image import SonarImage, detect_nadir_band
+from sss_aug_studio.core.image import SonarImage
 from sss_aug_studio.core.labels import LabelSet, YoloBox
 from sss_aug_studio.core.meta import AcquisitionMeta
 from sss_aug_studio.core.pipeline import AugmentationInstance, AugmentationPipeline
@@ -65,10 +65,86 @@ def test_gamma_speckle_moments():
     assert s.var() == pytest.approx(0.25, abs=0.03)
 
 
-def test_k_texture_unit_mean():
-    rng = np.random.default_rng(0)
-    t = k_texture_field(rng, (300, 300), nu=5.0, corr_px=(3.0, 3.0))
+@pytest.mark.parametrize("nu", [1.0, 8.0])
+def test_k_texture_moments(nu):
+    """Unit mean and variance 1/nu, including the heavy-tail regime.
+
+    The pre-copula smoothed-gamma construction failed this at nu=1 (mean 1.098,
+    variance 0.714 against 1.0) because its 0.05 floor clipped after the moment
+    restoration; the exact marginal needs no floor.
+    """
+    t = k_texture_field(np.random.default_rng(0), (320, 448), nu=nu, corr_px=(3.0, 3.0))
     assert t.mean() == pytest.approx(1.0, abs=0.05)
+    assert t.var() == pytest.approx(1.0 / nu, rel=0.15)
+    assert t.min() > 0.0, "gamma support is (0, inf); no clipping floor may survive"
+
+
+def _gamma_ks_and_shape(x, k):
+    """KS distance to Gamma(k, 1/k) and the ML-recovered shape."""
+    from scipy import stats
+
+    return (
+        float(stats.kstest(x.ravel(), stats.gamma(a=k, scale=1.0 / k).cdf).statistic),
+        float(stats.gamma.fit(x.ravel(), floc=0.0)[0]),
+    )
+
+
+@pytest.mark.parametrize("nu", [1.0, 8.0])
+def test_k_texture_gamma_marginal(nu):
+    """The correlated texture is exactly Gamma(nu, 1/nu), not merely moment-matched.
+
+    Measured against the pre-copula implementation, which scored KS 0.124 (nu=1)
+    and 0.046 (nu=8) and recovered nu-hat 0.98 / 6.43.  KS is taken on a grid
+    subsampled at 2.5 kernel sigma so the sample is effectively independent.
+    """
+    corr = 3.0
+    t = k_texture_field(np.random.default_rng(4), (320, 448), nu=nu, corr_px=(corr, corr))
+    step = int(round(2.5 * corr))
+    ks, _ = _gamma_ks_and_shape(t[::step, ::step], nu)
+    _, nu_hat = _gamma_ks_and_shape(t, nu)
+    assert ks < 0.04, f"marginal KS {ks:.4f} too large"
+    assert nu_hat == pytest.approx(nu, rel=0.05), f"recovered nu {nu_hat:.3f} vs nominal {nu}"
+
+
+def test_gamma_speckle_correlated_marginal():
+    """The speckle factor keeps its exact marginal once correlated, and emits no zeros.
+
+    At the shipped defaults the pre-copula smooth-renormalise-clip path drove
+    1.73% of pixels to exactly zero -- a physically impossible echo -- and
+    recovered L-hat 2.70 for a nominal 3.
+    """
+    looks = 3.0
+    g = gamma_speckle(np.random.default_rng(5), (320, 448), looks=looks, corr_px=(0.7, 0.7))
+    assert g.min() > 0.0, "no pixel may be clipped to a zero echo"
+    _, looks_hat = _gamma_ks_and_shape(g, looks)
+    assert looks_hat == pytest.approx(looks, rel=0.05), f"recovered L {looks_hat:.3f} vs nominal {looks}"
+
+
+def _acorr_length_px(field, axis):
+    """1/e length of the normalised autocovariance along ``axis``, in pixels."""
+    x = np.asarray(field, dtype=np.float64)
+    x = x - x.mean()
+    n = x.shape[axis]
+    spec = np.fft.rfft(x, n=2 * n, axis=axis)
+    ac = np.fft.irfft(spec * np.conj(spec), axis=axis)
+    ac = np.moveaxis(ac, axis, 0)[:n].mean(axis=1)
+    ac /= ac[0]
+    k = int(np.argmax(ac < np.exp(-1.0)))
+    assert k > 0
+    return k - 1 + (ac[k - 1] - np.exp(-1.0)) / (ac[k - 1] - ac[k])
+
+
+@pytest.mark.parametrize("sigma_y,sigma_x", [(2.0, 8.0), (10.0, 2.0)])
+def test_k_texture_correlation_anisotropy(sigma_y, sigma_x):
+    """``corr_px`` is a Gaussian kernel sigma per axis; the 1/e length is ~1.95 sigma.
+
+    Guards the correlation structure the copula transform must not disturb: the
+    two axes are set independently, and the achieved length tracks the requested
+    sigma with the same factor the smoothed-gamma implementation produced.
+    """
+    t = k_texture_field(np.random.default_rng(7), (512, 512), nu=8.0, corr_px=(sigma_y, sigma_x))
+    assert _acorr_length_px(t, 0) / sigma_y == pytest.approx(1.95, rel=0.15)
+    assert _acorr_length_px(t, 1) / sigma_x == pytest.approx(1.95, rel=0.15)
 
 
 # ------------------------------------------------------------------ core

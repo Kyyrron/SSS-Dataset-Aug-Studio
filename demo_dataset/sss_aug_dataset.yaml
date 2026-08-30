@@ -1,10 +1,20 @@
+# Acquisition context for this dataset. Every AcquisitionMeta field is honoured
+# here at the top level and inside `meta:` — the two positions are equivalent,
+# the top level wins on conflict, and an unrecognised key warns.
+#
+# Synthetic fixture; see README.md for provenance. Per-image `layout` and
+# `heading_deg` come from the sidecar JSON beside each image.
 layout: dual
+intensity_mapping: log
+log_range_db: 30.5
 shadow_included: true
-intensity_mapping: linear
+nadir_center_frac: 0.5
+nadir_halfwidth_frac: 0.1269
 meta:
-  altitude_m: 2.0
-  slant_range_m: 30.0
-  speed_mps: 1.5
-  res_along_m: 0.08
-  depth_m: 5.0
-  frequency_khz: 450
+  altitude_m: 3.81
+  slant_range_m: 15.0
+  res_along_m: 0.05
+  speed_mps: 1.0
+  prf_hz: 20.0
+  depth_m: 4.0
+  frequency_khz: 450.0

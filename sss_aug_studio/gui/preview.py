@@ -23,7 +23,6 @@ from PySide6.QtWidgets import (
     QGraphicsPixmapItem,
     QGraphicsScene,
     QGraphicsView,
-    QGridLayout,
     QHBoxLayout,
     QLabel,
     QListWidget,
@@ -257,8 +256,7 @@ class PreviewTile(QWidget):
                 _draw_boxes(scene, la, aug.shape[1], aug.shape[0], "#ffab40")
             else:
                 bgr = difference_map(orig, aug)
-                rgb = np.ascontiguousarray(bgr[:, :, ::-1]).astype(np.float32) / 255.0
-                # reuse to_pixmap grayscale path is wrong for color; build directly
+                # to_pixmap's grayscale path is wrong for color; build the QImage directly
                 from PySide6.QtGui import QImage, QPixmap
 
                 u8 = np.ascontiguousarray(bgr[:, :, ::-1])
@@ -374,7 +372,7 @@ class PreviewRow(QFrame):
     clicked = Signal(str)            # row_id
     remove_requested = Signal(str)   # row_id
 
-    def __init__(self, row_id: str, n_tiles: int, sync_cb: Callable[[object], None] = None):
+    def __init__(self, row_id: str, n_tiles: int, sync_cb: Optional[Callable[[object], None]] = None):
         super().__init__()
         self.row_id = row_id
         # v0.3.0: zoom/pan synchronization is scoped to THIS row (its tiles

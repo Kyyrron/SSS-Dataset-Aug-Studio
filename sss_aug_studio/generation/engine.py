@@ -10,8 +10,10 @@ Guarantees (frozen requirements):
   keyed by (image, instance, copy).
 * **Auditable** — ``generation_manifest.json`` records tool version, full
   config, and per-output applied instances, sampled parameters and label
-  provenance; ``statistics.md`` summarizes application counts, parameter
-  ranges and class balance.
+  provenance; ``statistics.md`` summarizes source/augmented/total image
+  counts, the box budget (boxes in / out / dropped), elapsed time,
+  per-instance application counts and sampled parameter ranges
+  (n / min / mean / max).
 
 The engine is GUI-free; the Qt dialog and the CLI both drive it through
 progress callbacks.
@@ -28,7 +30,6 @@ from pathlib import Path
 from typing import Callable, Optional
 
 import numpy as np
-import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from .. import __version__

@@ -44,6 +44,11 @@ meta:
   frequency_khz: 450
 ```
 
+**Key placement.** Every field above may sit at the top level *or* inside
+`meta:` — the two positions are equivalent, and the top level wins if you
+write a key in both. A key the tool does not recognise (a misspelling, say)
+is ignored with a warning naming it, so it never silently does nothing.
+
 **Per-image sidecar** — `myimage.json` next to `myimage.png` overrides the
 defaults per image (e.g. produced by your acquisition/FBR pipeline):
 
@@ -114,9 +119,9 @@ A profile simply stores its augmentation instances — **including any
 per-parameter stochastic laws** configured in the Parameters form. There is
 no execution mode to choose: a profile is deterministic when no parameter
 declares a law, stochastic otherwise (the status bar shows which when
-loading). Legacy v0.2 profiles that carried a profile-level
-`mode: stochastic` block are migrated automatically on load. Seeds remain
-fully reproducible in both cases.
+loading). Seeds remain fully reproducible in both cases. A profile saved
+before v0.4.0 carries a profile-level `mode:`/`distributions:` block that is
+no longer accepted; delete those two top-level keys to load it.
 
 ## 4. Generate a dataset
 

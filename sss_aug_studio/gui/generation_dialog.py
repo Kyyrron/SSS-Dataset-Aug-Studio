@@ -57,7 +57,7 @@ class _Worker(QThread):
                 cancel=lambda: self._cancel,
             )
             self.finished_stats.emit(stats)
-        except Exception as exc:  # surface engine failures to the UI
+        except Exception as exc:  # noqa: BLE001 - surface any engine failure to the UI
             self.failed.emit(str(exc))
 
 
@@ -188,8 +188,9 @@ class GenerationDialog(QDialog):
         path, _ = QFileDialog.getSaveFileName(self, "Export generation config", "generation_config.yaml", "YAML (*.yaml)")
         if path:
             cfg = self._build_config()
-            with open(path, "w") as fh:
-                yaml.safe_dump(json.loads(cfg.model_dump_json()), fh, sort_keys=False)
+            with open(path, "w", encoding="utf-8") as fh:
+                yaml.safe_dump(json.loads(cfg.model_dump_json()), fh, sort_keys=False,
+                               allow_unicode=True)
             self.log.append(f"Config exported: {path} — reproduce with:  sss-aug-generate {path}")
 
     def _run(self) -> None:

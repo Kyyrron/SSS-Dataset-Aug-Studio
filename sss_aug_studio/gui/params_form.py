@@ -18,7 +18,6 @@ from __future__ import annotations
 import typing
 from typing import Any, Callable, Optional, get_args, get_origin
 
-from pydantic import BaseModel
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox,

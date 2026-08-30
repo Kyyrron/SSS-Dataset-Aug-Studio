@@ -11,10 +11,11 @@ Physical phenomenon
     the exact cue the detector uses.
 
 Model
-    Inside each label box (convention: box = highlight + shadow, decision #3)
+    Inside each label box (convention: box = highlight + shadow, per the
+    dataset's ``shadow_included`` flag)
     the shadow region is segmented down-range of the highlight (Otsu within
     the box); modifications are applied only when segmentation confidence
-    exceeds a gate (decision #5):
+    exceeds the segmentation-confidence gate:
       floor:     I' = I (1 - beta) + beta F     (raise ambient floor F)
       softness:  range-directed blur of the shadow's inner boundary
       length:    L_s' = kappa L_s with kappa = h/h' — every scaling factor is
@@ -42,7 +43,7 @@ class ShadowParams(AugParams):
         1.0, ge=0.7, le=1.4, description="Altitude ratio h'/h; shadow length scales by h/h' (1 = off). [-]"
     )
     confidence_gate: float = Field(
-        0.35, ge=0.0, le=0.9, description="Min shadow-segmentation confidence to modify a box (decision #5). [-]"
+        0.35, ge=0.0, le=0.9, description="Min shadow-segmentation confidence to modify a box; below it F6 skips the box. [-]"
     )
     highlight_gain_db: float = Field(0.0, ge=-6.0, le=6.0, description="Highlight region gain. [dB]")
 

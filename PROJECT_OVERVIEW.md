@@ -28,8 +28,7 @@ GUI forms, generation distributions, profiles and tests pick them up
 automatically. On top sit application services (`datasets/` YOLO indexing +
 modular metadata readers, `generation/` parallel batch engine + headless
 CLI, `profiles/`) and a PySide6 GUI (`gui/`) with debounced, stage-cached
-live preview. Details: `docs/architecture.md`, delta:
-`docs/architecture_update_v0.2.md`.
+live preview. Details: `docs/architecture.md`.
 
 ## Implemented augmentation families
 
@@ -53,8 +52,10 @@ and the in-app encyclopedia (Help ▸ Scientific encyclopedia).
   `layout` (dual / single_port / single_starboard), `intensity_mapping`
   (declared, never inferred: linear | log | gamma; **default assumption when
   absent: log/dB**), `shadow_included` (boxes cover highlight + shadow;
-  default true), plus physical `meta` defaults. Per-image sidecar JSON
-  overrides.
+  default true), plus the physical acquisition values. Every field is honoured
+  at the top level or inside `meta:` — equivalent positions, top level winning
+  on conflict — and an unrecognised key warns rather than vanishing. Per-image
+  sidecar JSON overrides.
 * **Profiles** — named pipeline configurations (YAML), six bundled presets.
   Every float parameter of an instance is either **fixed** or follows a
   **stochastic law** (uniform / normal / log-uniform), chosen directly in
@@ -72,7 +73,7 @@ and the in-app encyclopedia (Help ▸ Scientific encyclopedia).
 | `GETTING_STARTED.md` | 5-minute quick start |
 | `AUGMENTATION_STRATEGIES.md` | per-family physics + math + code + limits |
 | `docs/user_manual.md` | full workflow, metadata formats, generation |
-| `docs/architecture.md` (+ `architecture_update_v0.2.md`) | system design |
+| `docs/architecture.md` | system design (current release) |
 | `docs/developer_guide.md` | add a family in one file, conventions |
 | `docs/scientific_documentation.md` | fidelity boundaries, validation protocol |
 | `docs/math_appendix.md` | complete equation set |

@@ -1,6 +1,7 @@
 """YOLO label handling with exact warp propagation.
 
-Dataset convention (validated decision #3): every YOLO box encloses the
+Dataset convention (``AcquisitionMeta.shadow_included``, default true):
+every YOLO box encloses the
 **complete object signature — highlight *and* acoustic shadow**.  Geometric
 augmentations therefore warp the whole box through the same displacement
 field as the pixels; the shadow-modulation family (F6) may additionally move

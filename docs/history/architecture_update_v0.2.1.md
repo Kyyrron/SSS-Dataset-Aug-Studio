@@ -1,5 +1,9 @@
 # Architecture update — v0.2.1
 
+> **Historical.** Superseded by `docs/architecture.md`, which describes the
+> current release. Kept as a record of what changed at this release; not
+> maintained.
+
 Delta only. Scope: the Interactive Preview (Area 4) becomes **multi-row**;
 no change to core, physics, datasets, generation, profiles or families.
 

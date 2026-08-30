@@ -1,2 +1,9 @@
 names:
-  0: object
+  0: anchor
+  1: bottle_plastic
+  2: brick
+  3: can
+  4: debris
+  5: rope
+  6: tent_weight
+  7: tire_bicycle

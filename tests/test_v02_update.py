@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 import yaml
+from pydantic import ValidationError
 
 from sss_aug_studio.core.image import SonarImage
 from sss_aug_studio.core.labels import LabelSet, YoloBox
@@ -73,9 +74,6 @@ def test_default_intensity_mapping_is_log():
 def test_display_roundtrip_log_default():
     img = _img()
     u8 = img.to_display("auto")  # auto = declared mapping = log by default
-    back = SonarImage(
-        data=np.zeros_like(img.data), meta=img.meta
-    )  # decode manually via loader path
     from sss_aug_studio.core.image import _inverse_display_mapping
 
     lin = _inverse_display_mapping(u8.astype(np.float32) / 255.0, img.meta)
@@ -119,16 +117,38 @@ def test_profile_instance_laws_roundtrip(tmp_path):
     assert loaded.instances[0].distributions == law
 
 
-def test_legacy_stochastic_profile_migrates(tmp_path):
-    """v0.2.x profiles (profile-level mode/distributions) migrate on load."""
-    legacy = PipelineProfile(
-        name="old",
-        mode="stochastic",
-        instances=[AugmentationInstance(family="speckle", label="s", instance_id="i1")],
-        distributions={"i1": {"looks": {"dist": "uniform", "low": 2.0, "high": 6.0}}},
-    )
-    assert legacy.instances[0].distributions["looks"]["dist"] == "uniform"
-    assert legacy.is_stochastic
+def test_saved_profile_carries_no_profile_level_legacy_keys(tmp_path):
+    """v0.4.0 writes instances only — no profile-level mode/distributions."""
+    law = {"looks": {"dist": "uniform", "low": 2.0, "high": 6.0}}
+    inst = AugmentationInstance(family="speckle", label="s", instance_id="fwd_i1", distributions=law)
+    path = tmp_path / "fwd.yaml"
+    save_profile(PipelineProfile.from_pipeline("p", "d", AugmentationPipeline([inst])), path)
+    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert "mode" not in raw
+    assert "distributions" not in raw          # top level; the instance keeps its own
+    assert raw["instances"][0]["distributions"] == law
+    assert load_profile(path).is_stochastic
+
+
+@pytest.mark.parametrize("extra", [
+    pytest.param({"mode": "stochastic",
+                  "distributions": {"i1": {"looks": {"dist": "uniform", "low": 2.0, "high": 6.0}}}},
+                 id="v0.2-stochastic"),
+    pytest.param({"mode": "deterministic", "distributions": {}}, id="v0.3-written"),
+])
+def test_profile_level_legacy_keys_rejected_by_name(tmp_path, extra):
+    """Removed in v0.4.0: such a profile fails loudly rather than losing its laws."""
+    doc = {"name": "old",
+           "instances": [{"family": "speckle", "label": "s", "instance_id": "i1"}],
+           **extra}
+    path = tmp_path / "legacy.yaml"
+    path.write_text(yaml.safe_dump(doc, sort_keys=False), encoding="utf-8")
+    with pytest.raises(ValidationError) as exc:
+        load_profile(path)
+    msg = str(exc.value)
+    assert "extra_forbidden" in msg
+    for key in extra:
+        assert key in msg                      # the error names the offending key
 
 
 def test_presets_are_deterministic():
@@ -155,7 +175,9 @@ def test_stochastic_generation_reproducible(tmp_path):
 
 
 # ------------------------------------------------------------------- UTF-8
+@pytest.mark.gui  # imports gui.encyclopedia, which imports PySide6.QtWidgets at module level
 def test_encyclopedia_pages_load_utf8():
+    pytest.importorskip("PySide6")
     from sss_aug_studio.gui import encyclopedia as enc_mod
 
     # bypass Qt: exercise the loader function directly

@@ -39,7 +39,10 @@ contrast against the changed context.
 ## 6. Limitations
 Log-normal texture is a context model, not a bedform simulator (no sand
 ripples with directional shadowing — see future work); reflectivity shift is
-spatially unstructured apart from the correlated field.
+spatially unstructured apart from the correlated field. The dB shift is
+applied to approximately linear intensities recovered by inverting the
+declared intensity mapping on load, so it is exact only to the extent that
+mapping describes the export.
 
 ## 7. Validation
 Compare background mean dB and autocovariance lengths against patches of

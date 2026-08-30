@@ -14,6 +14,10 @@ Model
     I' = I . T . G,  G ~ Gamma(L, 1/L)  (unit-mean speckle, L looks),
                      T ~ Gamma(nu, 1/nu) spatially correlated texture
                      (T = 1 for the pure Rayleigh/Gamma regime).
+
+    Both gamma factors are correlated by a memoryless nonlinear transformation
+    of a Gaussian field (Tough & Ward 1999), so the marginal stays exactly
+    gamma at every shape and correlation length.
 """
 
 from __future__ import annotations
@@ -55,9 +59,10 @@ class SpeckleAugmentation(Augmentation):
         references=(
             "Abraham & Lyons (2002), IEEE J. Oceanic Eng. 27(4):800-813, DOI 10.1109/JOE.2002.804324",
             "Lyons & Abraham (1999), J. Acoust. Soc. Am. 106(3):1307-1315, DOI 10.1121/1.428034",
+            "Tough & Ward (1999), J. Phys. D: Appl. Phys. 32(23):3075-3084, DOI 10.1088/0022-3727/32/23/314",
         ),
-        limitations="Stationary statistics per image; no coherent facet glints; smoothed-gamma texture is "
-        "approximately (not exactly) gamma-marginal.",
+        limitations="Stationary statistics per image (no mixed-sediment segmentation); no coherent facet "
+        "glints. Both gamma factors carry an exact marginal at every shape and correlation length.",
         expected_effect="Grain-level multiplicative noise; with the K option, patchy bright clutter clusters "
         "that stress detector false-positive behavior.",
         doc_page="f1_speckle.md",
@@ -65,17 +70,8 @@ class SpeckleAugmentation(Augmentation):
 
     def apply(self, img: SonarImage, labels: LabelSet, params: SpeckleParams, rng: np.random.Generator, strength: float = 1.0) -> AugResult:
         h, w = img.data.shape
-        g = gamma_speckle(rng, (h, w), params.looks)
-        if params.speckle_corr_px > 0.3:
-            from scipy.ndimage import gaussian_filter
-
-            g = gaussian_filter(g, sigma=params.speckle_corr_px, mode="reflect")
-            # restore unit mean / target variance after smoothing
-            std = float(g.std())
-            if std > 1e-6:
-                g = 1.0 + (g - g.mean()) * ((1.0 / np.sqrt(params.looks)) / std)
-            g = np.clip(g, 0.0, None)
-        noise = g
+        c = params.speckle_corr_px
+        noise = gamma_speckle(rng, (h, w), params.looks, corr_px=(c, c))
         if params.distribution == "k":
             # texture correlation in pixels; isotropic in ground units when metadata present
             sides = list(img.sides())

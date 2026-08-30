@@ -8,7 +8,7 @@ contrast varies with volume reverberation (turbidity), noise floor and
 processing; shadow *length* varies with acquisition altitude — the same
 target surveyed at 1.5 m vs 3 m altitude in the shallow regime casts a very
 different shadow. Under the dataset convention `shadow_included: true` (labels cover
-highlight + acoustic shadow — design decision #3, now a per-dataset flag),
+highlight + acoustic shadow — the `shadow_included` dataset flag),
 altering shadow length moves the down-range edge of the box; with
 `shadow_included: false` F6 modifies pixels only and never touches labels.
 
@@ -21,7 +21,7 @@ Softening:      penumbra Gaussian blur of the mask edge (softness in m)
 ```
 
 ## 3. Implementation
-Confidence-gated (decision #5): inside each label box the down-range dark
+Confidence-gated: inside each label box the down-range dark
 region is segmented (Otsu on the box's range profile); a gate rejects boxes
 whose shadow contrast or geometry is implausible (no edit rather than a wrong
 edit). Enabled operations: floor filling (turbidity), penumbra softening and

@@ -10,12 +10,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-import numpy as np
 import threading
 
 from PySide6.QtCore import Qt, QTimer, QThread, Signal
 from PySide6.QtWidgets import (
-    QComboBox,
     QDialog,
     QDialogButtonBox,
     QDockWidget,

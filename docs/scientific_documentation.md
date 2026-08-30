@@ -44,7 +44,9 @@ chain, then propagation additions, and receiver-level statistics last.
   documented default assumption is **log/dB** (the normal SSS waterfall
   export); if a dataset was actually exported linearly, declare it —
   otherwise the inversion introduces a monotone contrast error.
-* F1's K texture matches first/second moments with an approximate marginal.
+* F1's two gamma factors carry exact marginals; what is approximate is the
+  correlation function, which the memoryless map warps by under 10% of the
+  length scale.
 * F3/F4 use flat-seabed, kinematic ray geometry — no bathymetry, no
   intra-ping effects.
 * F8 is incoherent and phenomenological (no ray tracing) — designed to

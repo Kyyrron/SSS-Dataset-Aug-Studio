@@ -59,7 +59,7 @@ Exact for time-stationary scenes.
 
 ---
 
-## F1 — Speckle & reverberation (`augmentations/speckle.py`) — ⚖️ model / 🔧 texture marginal
+## F1 — Speckle & reverberation (`augmentations/speckle.py`) — ⚖️ model & marginals
 
 **Physical origin.** Coherent summation of many unresolved scatterers →
 Rayleigh envelope (exponential intensity); spatially structured shallow
@@ -68,20 +68,27 @@ by nature.
 
 **Model.** `I' = I·T·G`, `G ~ Gamma(L, 1/L)` unit mean (Var 1/L);
 `T ~ Gamma(ν, 1/ν)` unit mean, correlated over ℓ_T; Rayleigh regime `T ≡ 1`.
-*Refs.* Abraham & Lyons (2002), IEEE JOE 27(4), DOI 10.1109/JOE.2002.804324;
-Lyons & Abraham (1999), JASA 106(3), DOI 10.1121/1.428034.
+Both correlated gamma factors come from a memoryless nonlinear transformation
+of a Gaussian process, `x = F⁻¹_Gamma(Φ(z))`, which leaves the marginal exact
+at every shape and correlation length while the Gaussian kernel sets the
+correlation. *Refs.* Abraham & Lyons (2002), IEEE JOE 27(4),
+DOI 10.1109/JOE.2002.804324; Lyons & Abraham (1999), JASA 106(3),
+DOI 10.1121/1.428034; Tough & Ward (1999), J. Phys. D 32(23),
+DOI 10.1088/0022-3727/32/23/314; Ghosh & Henderson (2003), ACM TOMACS 13(3),
+DOI 10.1145/937332.937336.
 
 **Core code.**
 ```python
-g = rng.gamma(shape=looks, scale=1.0 / looks, size=shape)     # unit-mean speckle
-t = gaussian_filter(rng.gamma(nu, 1.0/nu, shape), corr_px)    # K texture
-t /= t.mean()
-out = img.data * t * g
+z = correlated_gaussian_field(rng, shape, 1.0, corr_px)       # unit-variance Gaussian
+nodes = gamma.ppf(ndtr(z_nodes), a=k, scale=1.0 / k)          # tabulated F^-1 . Phi
+x = np.interp(z, z_nodes, nodes)                              # exact Gamma(k, 1/k)
+out = img.data * t * g                                        # k = nu for T, L for G
 ```
 
 **Effect.** Multiplicative grain; K option adds patchy bright clutter.
-**Limitations.** Stationary per image; the smoothed-gamma texture matches
-first/second moments but has an approximate marginal (🔧).
+**Limitations.** Stationary per image; no coherent facet glints. Both are
+scope limits — the marginals are exact, and the correlation warping the
+monotone map introduces is bounded (<10% of the length scale, ⚖️).
 
 ## F2 — Radiometric transfer (`augmentations/radiometric.py`) — ⚖️ sonar-equation terms
 
@@ -105,7 +112,10 @@ view *= 10.0 ** (gain_db / 10.0)                   # per-column, per side
 ```
 
 **Effect.** Smooth per-side range-dependent brightness changes.
-**Limitations.** Flat seabed; dB math exact in the declared-linear domain.
+**Limitations.** Flat-seabed grazing angles; the dB correction acts on
+approximately linear intensities recovered by inverting the declared
+intensity mapping, which is only approximately invertible (🔧); no azimuthal
+beam-pattern effects.
 
 ## F3 — Slant-range & altitude geometry (`augmentations/slant_geometry.py`) — ⚖️ geometry, 🔧 flat seabed
 
@@ -198,8 +208,10 @@ if abs(dx_edge) > 0.5 and img.meta.shadow_included:    # convention gate
 ```
 
 **Effect.** Lighter/softer or longer/shorter shadows, box edge tracking.
-**Limitations.** Needs in-box shadow contrast (gated); single dominant
-shadow per box; Otsu segmentation is heuristic (🔧).
+**Limitations.** Needs in-box shadow contrast; the segmentation-confidence
+gate skips a box rather than guessing; single dominant shadow per box; Otsu
+segmentation is heuristic (🔧). The down-range box edge moves only where the
+dataset's `shadow_included` flag is true.
 
 ## F7 — Seabed reflectivity & texture (`augmentations/seabed.py`) — ⚖️ level shift, 🔧 texture model
 
@@ -222,7 +234,8 @@ out = img.data * 10.0 ** (gain_db / 10.0)
 
 **Effect.** Brighter/darker background, sediment-like patchiness.
 **Limitations.** Log-normal context model, no bedforms/ripples (🔧; see
-future work).
+future work); the dB shift acts on approximately linear intensities recovered
+by inverting the declared intensity mapping on load.
 
 ## F8 — Shallow-water multipath (`augmentations/multipath.py`) — 🔧 incoherent hard-negative generator
 
@@ -252,6 +265,10 @@ negatives, not physics-grade echoes).
 
 ## Synchronization note
 
-This document quotes the implementation as of v0.2.0. When a family module
+This document quotes the implementation as of v0.4.0. When a family module
 changes, update the corresponding section here and the encyclopedia page in
-the same commit (`docs/developer_guide.md` §conventions).
+the same commit (`docs/developer_guide.md` §conventions). This is enforced:
+`tools/docs_sync_check.py`, run from `.githooks/pre-commit`, blocks a commit
+that changes a file under `augmentations/` without both. It maps a module to
+its section by reading the section headings below, so each heading must keep
+naming its module as ``(`augmentations/<module>.py`)``.

@@ -1,4 +1,4 @@
-"""Modular acquisition-metadata readers (validated decision #2).
+"""Modular acquisition-metadata readers.
 
 Metadata resolution is a chain of responsibility so new sources (EXIF, ROS
 bag sidecars, SonarView exports) can be added without touching callers:
@@ -15,6 +15,7 @@ Later readers only fill fields the earlier ones left unset.
 from __future__ import annotations
 
 import json
+import warnings
 from pathlib import Path
 from typing import Optional, Protocol
 
@@ -48,21 +49,47 @@ class SidecarJsonReader:
 
 
 class DatasetConfigReader:
-    """Dataset-level defaults from ``sss_aug_dataset.yaml`` (layout, meta block)."""
+    """Dataset-level defaults from ``sss_aug_dataset.yaml``.
+
+    Every :class:`AcquisitionMeta` field is honoured at the **top level** and
+    inside the ``meta:`` block; the two positions are equivalent and the top
+    level wins where a key appears in both.  A key at either level that is not
+    an ``AcquisitionMeta`` field is ignored with a :class:`UserWarning` naming
+    it, so a misspelling is visible rather than silently inert.  Reading never
+    raises: a malformed or non-conformant config yields no fields.
+    """
 
     def __init__(self, dataset_root: Path):
         self._fields: dict = {}
         cfg = dataset_root / DATASET_CONFIG_NAME
-        if cfg.exists():
-            try:
-                doc = yaml.safe_load(cfg.read_text(encoding="utf-8")) or {}
-                self._fields = dict(doc.get("meta", {}))
-                if "layout" in doc:
-                    self._fields["layout"] = doc["layout"]
-                if "intensity_mapping" in doc:
-                    self._fields["intensity_mapping"] = doc["intensity_mapping"]
-            except (yaml.YAMLError, OSError):
-                self._fields = {}
+        if not cfg.exists():
+            return
+        try:
+            doc = yaml.safe_load(cfg.read_text(encoding="utf-8")) or {}
+        except (yaml.YAMLError, OSError):
+            return
+        if not isinstance(doc, dict):
+            return
+        block = doc.get("meta") or {}
+        if not isinstance(block, dict):
+            block = {}
+
+        known = set(AcquisitionMeta.model_fields)
+        # top level wins: seed from it, then fill the gaps from ``meta:``
+        self._fields = {k: v for k, v in doc.items() if k in known}
+        for k, v in block.items():
+            if k in known:
+                self._fields.setdefault(k, v)
+
+        unknown = [k for k in doc if k not in known and k != "meta"]
+        unknown += [k for k in block if k not in known]
+        if unknown:
+            warnings.warn(
+                f"{cfg}: ignoring unrecognised key(s) {sorted(set(unknown))}; "
+                f"expected an AcquisitionMeta field ({', '.join(sorted(known))}).",
+                UserWarning,
+                stacklevel=2,
+            )
 
     def read(self, image_path: Path) -> Optional[dict]:
         return dict(self._fields) if self._fields else None

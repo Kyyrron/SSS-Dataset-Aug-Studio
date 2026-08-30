@@ -24,7 +24,10 @@ Elevation beam pattern:  B(θ) = exp(−½((θ − θ_tilt)/σ_b)²)
 ## C. Statistics (physics/statistics.py)
 
 Speckle (L looks):       G ~ Gamma(L, 1/L),  E[G]=1, Var[G]=1/L
-K texture:               T = smooth_ℓ(Gamma(ν, 1/ν)), renormalized to E[T]=1
+K texture:               T ~ Gamma(ν, 1/ν),  E[T]=1, Var[T]=1/ν
+Correlated gamma:        X = F⁻¹_{Gamma(k,1/k)}(Φ(Z)),  Z the unit-variance
+                         Gaussian field below — monotone and memoryless, so
+                         the marginal is exact; 1/e length ≈ 1.95·σ_kernel
 K composite:             I' = I·T·G  (heavy tails as ν → small)
 Correlated field:        F = (K_ℓ * W)/std, W white Gaussian (anisotropic ℓ)
 AR(1) dB stripes:        g_{y+1} = ρ g_y + ε,  ρ = exp(−res_along/ℓ),

@@ -7,6 +7,8 @@ Human-readable form of `sss_aug_studio/documentation/bibliography.bib`
 - Abraham & Lyons (2002), IEEE J. Oceanic Eng. 27(4):800–813. DOI 10.1109/JOE.2002.804324.
 - Lyons & Abraham (1999), JASA 106(3):1307–1315. DOI 10.1121/1.428034.
 - Abraham (2019), *Underwater Acoustic Signal Processing*, Springer. DOI 10.1007/978-3-319-92983-5.
+- Tough & Ward (1999), J. Phys. D: Appl. Phys. 32(23):3075–3084. DOI 10.1088/0022-3727/32/23/314.
+- Ghosh & Henderson (2003), ACM Trans. Model. Comput. Simul. 13(3):276–294. DOI 10.1145/937332.937336.
 
 ## Propagation & image formation
 - Francois & Garrison (1982), JASA 72(6):1879–1890. DOI 10.1121/1.388673.

@@ -12,7 +12,7 @@ Conventions (frozen in the validated design):
   effects convert via ``10^(dB/10)``, so every computation runs in its
   physically appropriate domain.
 
-Layouts (validated decision #1): ``single_port``, ``single_starboard`` and the
+Layouts: ``single_port``, ``single_starboard`` and the
 primary ``dual`` layout (port | nadir | starboard).  :meth:`SonarImage.sides`
 exposes each side with a canonical *range-increases-with-index* view so all
 physics code is layout-agnostic.
@@ -39,7 +39,7 @@ def detect_nadir_band(data: np.ndarray, center_frac: float = 0.5) -> tuple[int, 
     column-mean intensity is below 45 % of the global mean.  Falls back to a
     2 %-wide band around ``center_frac`` when no dark run is found.
     """
-    h, w = data.shape[:2]
+    w = data.shape[1]
     col_mean = data.mean(axis=0)
     lo, hi = int(w * (center_frac - 0.20)), int(w * (center_frac + 0.20))
     lo, hi = max(lo, 0), min(hi, w)
@@ -118,7 +118,8 @@ class SonarImage:
         """Export the linear image as uint8 with the chosen display mapping.
 
         ``mapping`` in {"linear", "gamma", "log"}; defaults to the input
-        mapping so round-trips are approximately identity (decision #4).
+        mapping, so round-trips are approximately identity: the declared
+        intensity mapping is inverted on load and re-applied on export.
         """
         if mapping in (None, "auto"):
             mapping = self.meta.intensity_mapping

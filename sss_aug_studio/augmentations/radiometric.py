@@ -70,7 +70,8 @@ class RadiometricAugmentation(Augmentation):
             "Lurton (2010), An Introduction to Underwater Acoustics, 2nd ed., Springer (sonar equation, TVG)",
         ),
         limitations="Flat-seabed grazing angles; image-domain dB correction assumes approximately linear input "
-        "intensity (documented approximation, decision #4).",
+        "intensity — a documented approximation, since the declared intensity mapping is only "
+        "approximately invertible.",
         expected_effect="Smooth range-dependent brightening/darkening per side; near-range vs far-range balance "
         "shifts reproducing different gain settings and altitudes.",
         doc_page="f2_radiometric.md",

@@ -1,5 +1,9 @@
 # Architecture update — v0.2.0
 
+> **Historical.** Superseded by `docs/architecture.md`, which describes the
+> current release. Kept as a record of what changed at this release; not
+> maintained.
+
 Delta document only; `architecture.md` describes the base system. No layer is
 redesigned — this release adds two conventions, one augmentation *section*,
 one profile capability, and one bug-class fix.

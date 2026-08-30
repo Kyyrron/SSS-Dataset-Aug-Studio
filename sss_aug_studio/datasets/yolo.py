@@ -3,7 +3,7 @@
 Accepts the common Ultralytics layouts: ``images/``+``labels/`` at the root
 or under ``train|val|test`` splits, with ``data.yaml`` (or ``dataset.yaml``)
 providing class names.  Per-image :class:`AcquisitionMeta` is resolved
-through the modular reader chain (decision #2).
+through the modular reader chain (``datasets/metadata.py``).
 """
 
 from __future__ import annotations

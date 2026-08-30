@@ -54,7 +54,8 @@ class SeabedAugmentation(Augmentation):
             "Lyons & Abraham (1999), J. Acoust. Soc. Am. 106(3):1307-1315 (shallow seafloor backscatter)",
         ),
         limitations="Does not synthesize organized bedforms (sand ripples) — listed as future work; dB shift on "
-        "approximately linear intensities (decision #4).",
+        "approximately linear intensities, recovered by inverting the declared intensity "
+        "mapping on load.",
         expected_effect="Overall brighter/darker seabed and smooth patchy reflectivity variation; objects "
         "preserved when background-only mode is on.",
         doc_page="f7_seabed.md",

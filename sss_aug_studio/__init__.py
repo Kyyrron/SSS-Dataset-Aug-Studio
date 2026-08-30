@@ -10,7 +10,7 @@ from .core.meta import AcquisitionMeta
 from .core.pipeline import AugmentationInstance, AugmentationPipeline, PipelineResult
 from .core import registry
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "SonarImage", "AcquisitionMeta", "LabelSet", "YoloBox",
