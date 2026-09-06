@@ -11,12 +11,14 @@ sourced ROS workspace. What *is* blocked is marked per item: **BLOCKED — field
 
 ## Correctness / data-integrity risks
 
-- [ ] **No reader for the raw-float `.npz`.** The superproject `CLAUDE.md` §4.5 directs
-      authors to train on the GCS `_world.npz` (raw `intensity_db`) rather than the PNG, but
-      `SonarImage.load` (`core/image.py`) reads 8-bit images through `cv2.imread` only.
-      Consuming the raw floats would sidestep the per-image percentile window the GCS applies
-      at export and make the intensity mapping exact instead of approximate. Surfaced by the
-      `intensity_mapping` audit in `.claude/specs/dataset-metadata-contract.md`.
+- [x] ~~No reader for the raw-float `.npz`.~~ **Resolved by decision, 2026-09-01:
+      the AI feed is pictures + metadata.** The project settled that detector training
+      consumes the GCS seabed PNGs (raw native slant-bin waterfall) with their JSON
+      metadata; the `_world.npz` is an auxiliary georeferencing/analysis record, not a
+      training input, so `SonarImage.load`'s 8-bit reader is the intended interface.
+      Superproject `CLAUDE.md` §4.5 was updated the same day; the earlier
+      `intensity_mapping` audit note in `.claude/specs/dataset-metadata-contract.md`
+      records the old direction.
 
 - [ ] **BLOCKED — field data. Swap the synthetic `demo_dataset` for real beach imagery.**
       The fixture is currently rendered by `blueboat_sss_sim` (`tools/make_demo_dataset.py`),

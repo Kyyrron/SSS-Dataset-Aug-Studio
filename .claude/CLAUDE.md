@@ -192,9 +192,9 @@ collects 47 tests rather than 64. The same pattern holds in `BlueBoat-Control`,
 - **`SonarImage`** — `float32` in `[0,1]`, **linear intensity** domain (native domain of
   multiplicative sonar physics). Rows = pings (along-track), columns = across-track.
   `load()` reads **8-bit rasters only** (`cv2.imread(..., IMREAD_GRAYSCALE)`, /255, then the
-  declared inverse mapping); there is no reader for the GCS raw-float `_world.npz`, so the
-  root `CLAUDE.md` §4.5 instruction "train on the `.npz`, not the PNG" is not yet
-  satisfiable through this tool. `TODO.md` holds it.
+  declared inverse mapping) — the intended interface since the 2026-09-01 project decision
+  that the AI feed is **pictures + metadata** (root `CLAUDE.md` §4.5): the GCS raw-float
+  `_world.npz` is an auxiliary georeferencing record, not a training input.
   `sides()` yields per-side **canonical range-increasing views**, so augmentation code is
   written once for `dual`, `single_port` and `single_starboard`. `nadir_band()` auto-detects
   the dark nadir strip unless declared.
