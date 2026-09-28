@@ -11,14 +11,37 @@ sourced ROS workspace. What *is* blocked is marked per item: **BLOCKED — field
 
 ## Correctness / data-integrity risks
 
+- [ ] **GCS seabed pictures are inverted on an approximation.** Recorded 2026-09-15
+      from the superproject review (`project_review.md` Part 4, gap G12); **no code change
+      here by decision** — the bridge was not selected for the 2026-09-15 update. The
+      GCS pictures' JSON carries a `display_model` block (TL parameters, per-side curves
+      in `r/h`, `hi_db`, `gamma`, since 2026-09-15 also `transfer` — `power` or
+      `db_window` — `window_db` and per-row `gain_port_db`/`gain_stbd_db`) that inverts
+      the PNG losslessly, but `AcquisitionMeta.intensity_mapping` knows only
+      `linear|gamma|log`, so the studio still inverts GCS pictures with the fixed
+      `log_range_db` approximation and no `sss_aug_dataset.yaml` is written by the GCS.
+      Reading that block would make the physics-domain augmentations exact for GCS
+      datasets. Until then, GCS datasets should be declared `intensity_mapping: log`
+      explicitly and the residual scale error accepted.
+
+- [ ] **`tools/make_demo_dataset.py` no longer runs.** It imports the simulator's
+      `dataset/` and `mission/` packages, deleted in the 2026-09 simulator rework, so the
+      demo fixture cannot be regenerated from the current tree (untracked developer
+      script, not part of the installed package). Recorded 2026-09-15; fix or retire
+      when the fixture is next rebuilt.
+
 - [x] ~~No reader for the raw-float `.npz`.~~ **Resolved by decision, 2026-09-01:
       the AI feed is pictures + metadata.** The project settled that detector training
       consumes the GCS seabed PNGs (raw native slant-bin waterfall) with their JSON
       metadata; the `_world.npz` is an auxiliary georeferencing/analysis record, not a
       training input, so `SonarImage.load`'s 8-bit reader is the intended interface.
-      Superproject `CLAUDE.md` §4.5 was updated the same day; the earlier
-      `intensity_mapping` audit note in `.claude/specs/dataset-metadata-contract.md`
-      records the old direction.
+      Superproject `CLAUDE.md` §4.5 was updated the same day. (The earlier
+      direction — the raw-float `.npz` as the training input — was recorded in
+      a `.claude/specs/` note that went with that directory on 2026-09-18; what
+      it established and is still in force is the contract itself: the reader
+      honours **any** `AcquisitionMeta` field at either position and warns on an
+      unrecognised key, and `intensity_mapping` must be declared explicitly
+      because its absent-default (`log`) mis-inverts a linear dataset.)
 
 - [ ] **BLOCKED — field data. Swap the synthetic `demo_dataset` for real beach imagery.**
       The fixture is currently rendered by `blueboat_sss_sim` (`tools/make_demo_dataset.py`),

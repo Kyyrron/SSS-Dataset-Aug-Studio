@@ -14,8 +14,8 @@ Version 0.4.0. Python ≥ 3.10. No ROS dependency.
 
 This submodule supports the master thesis *Adaptive AI-Driven SSS Survey on a Small USV*
 (BlueBoat + Cerulean Omniscan 450 kHz, shallow enclosed basins). It is an **offline data
-tool**. It does not run on the boat, does not talk to the autopilot, and is not part of the
-live perception loop.
+tool** on the operator laptop, like every module of the project (nothing of ours runs on the
+boat). It does not talk to the autopilot and is not part of the live perception loop.
 
 Its outputs feed detector training (thesis deliverables D2 → D3). The scientific framing of
 augmentation realism — what may be claimed from augmented data — is bounded by
@@ -174,8 +174,8 @@ Non-Python assets are shipped via `[tool.setuptools.package-data]`
 (`documentation/encyclopedia/*.md`, `documentation/*.bib`, `profiles/presets/*.yaml`,
 `gui/*.qss`). A new asset directory needs an entry there or it vanishes from installs.
 
-**Much of the above is not in a fresh clone.** `.gitignore` excludes `.githooks/`,
-`demo_dataset/` and `.claude/specs/`, and the whole of `tools/` is untracked, as are
+**Much of the above is not in a fresh clone.** `.gitignore` excludes `.githooks/`
+and `demo_dataset/`, and the whole of `tools/` is untracked, as are
 `tests/test_gui_smoke.py`, `tests/test_dataset_metadata.py`, `docs/history/` and the four
 `docs/demo_*.png` figures. `demo_dataset/` still has nine *tracked* files from the
 superseded three-image fixture (`dual_shipwreck`, `dual_wreck2`, `port_wall`), staged as
