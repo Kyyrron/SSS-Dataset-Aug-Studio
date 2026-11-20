@@ -10,7 +10,7 @@ approximation*.
 
 Conventions: linear intensity `[0,1]`, rows = pings, per-side canonical
 range-increasing views; all randomness from the deterministic per-(image,
-instance, copy) RNG. See `docs/math_appendix.md` for the complete equation
+instance, copy) RNG. See `docs/DESIGN.md` Part 4 (mathematical appendix) for the complete equation
 set and `sss_aug_studio/documentation/bibliography.bib` for full citations.
 
 ---
@@ -267,7 +267,7 @@ negatives, not physics-grade echoes).
 
 This document quotes the implementation as of v0.4.0. When a family module
 changes, update the corresponding section here and the encyclopedia page in
-the same commit (`docs/developer_guide.md` §conventions). This is enforced:
+the same commit (`docs/DESIGN.md` Part 2, developer guide §conventions). This is enforced:
 `tools/docs_sync_check.py`, run from `.githooks/pre-commit`, blocks a commit
 that changes a file under `augmentations/` without both. It maps a module to
 its section by reading the section headings below, so each heading must keep

@@ -3,7 +3,7 @@
 Renders the per-family markdown pages shipped in
 ``sss_aug_studio/documentation/encyclopedia/``.  Equations are shown in
 fenced code blocks (a documented simplification of the pre-rendered-SVG
-plan, docs/architecture.md §7 Known approximations); the content contract per
+plan, docs/DESIGN.md Part 1, §7 Known approximations); the content contract per
 page — physical explanation, mathematical model, implementation, verified
 references, expected visual effect, limitations, validation hooks — is
 unchanged.
