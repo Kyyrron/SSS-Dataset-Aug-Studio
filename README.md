@@ -1,133 +1,170 @@
-# Physics-Informed SSS Augmentation Studio
+# SSS Dataset Augmentation Studio
 
-Professional desktop software for **physically plausible augmentation of
-YOLO side-scan sonar datasets**, built for the master thesis *Adaptive
-AI-Driven Side-Scan Sonar Survey on a Small USV* (BlueBoat + Cerulean
-Omniscan 450 kHz, shallow enclosed-basin regime). **Optional module** of the BlueBoat project: the headline
-detector is trained on simulated datasets from BlueBoat-Perception, and nothing in the project chain depends on
-this studio. Simulated data follow the superproject's `SIM_VALIDITY_CONDITIONS.md` (simulator frozen
-2026-11-18, literal acceptance verdict NOT READY, used as a model-conditional tool).
+A desktop tool that augments **YOLO datasets of side-scan sonar (SSS) images**.
+Each new image is a physically plausible variant of the same scene (other sea state,
+altitude, gain, seabed, multipath, survey direction). Labels move with the pixels.
+The input dataset is never modified, and a seed reproduces the output byte for byte.
 
-Every augmentation corresponds to a real physical phenomenon of SSS
-acquisition — with the governing equations, verified references, physical
-units and validation recipes shipped inside the application (Help ▸
-Scientific encyclopedia).
+It is an **optional** offline module of the BlueBoat project: nothing else depends on it.
+It has no ROS dependency.
 
-## Objectives
+## Requirements
 
-Support the master thesis *Adaptive AI-Driven Side-Scan Sonar Survey on a
-Small USV* (BlueBoat + Cerulean Omniscan 450 kHz, shallow enclosed-basin
-regime) by making YOLO detectors generalize from limited training data to
-real sea deployments. The tool augments SSS datasets so that **every
-generated image is a plausible alternative acquisition of the same scene** —
-different sea state, altitude, gain, seabed, turbidity, survey direction or
-basin multipath — with labels transformed consistently and full
-reproducibility from a single seed. Every transform is grounded in an
-identified physical phenomenon (or an exact acquisition symmetry), with
-equations, verified references and validation recipes shipped in-app.
+- Python 3.10 or newer
+- Core: numpy, scipy, opencv-python-headless, pydantic, PyYAML (installed automatically)
+- GUI only: PySide6 (the `gui` extra)
 
-## Feature map
+## Install
 
-| Area | What you get |
-|---|---|
-| Dataset Explorer | YOLO datasets (flat or split layouts), class search, per-image acquisition metadata (physical-unit or normalized fallback mode) |
-| Augmentation Library | 8 physics families as *science cards* (phenomenon, equation, references); multiple named instances per family |
-| Parameters | auto-generated forms — sliders/spinboxes with physical units and bounds, probability, strength, live ~150 ms preview |
-| Interactive Preview | 1–6 zoom-synced tiles: original / augmented / difference / before-after slider / histogram / intensity profile; label overlays; drag-reorder pipeline strip with "physical order" |
-| Generation | reproducible-by-seed batch generation (byte-identical across worker counts), originals never modified, per-parameter sampling distributions, progress/ETA/cancel, manifest + statistics, YAML export + headless CLI |
-| Profiles | six curated presets (calm sea, moderate waves, harbour inspection, river, turbid, fast survey) + save/load your own |
-
-**Geometry section:** G1 across-track mirror · G2 along-track reversal —
-exact, layout-aware acquisition symmetries with consistent labels.
-
-**The 8 physics families:** speckle & reverberation statistics · radiometric
-transfer (TVG/absorption/beam) · slant-range & altitude geometry · platform
-motion (USV roll/heave/yaw/speed) · ping loss & sensor artifacts · shadow &
-highlight modulation · seabed reflectivity & texture · shallow-water
-multipath (wall echoes — the thesis C4 hard-negative generator).
-
-Labels are first-class: geometric families move YOLO boxes through the exact
-forward transform; the shadow family moves the down-range box edge; boxes
-falling below 60 % retention are dropped and logged.
-
-## Implemented augmentation families
-
-**Geometry (exact symmetries):** G1 across-track mirror (layout-aware,
-nadir-preserving) · G2 along-track reversal.
-
-**Physics-informed:** F1 speckle & reverberation statistics (Rayleigh/K) ·
-F2 radiometric transfer (TVG residual, Francois–Garrison absorption, beam
-pattern) · F3 slant-range & altitude geometry (FBR error, gap breathing) ·
-F4 platform motion (USV roll/heave/yaw/speed) · F5 ping loss & sensor
-artifacts · F6 shadow & highlight modulation (convention-aware) · F7 seabed
-reflectivity & texture · F8 shallow-water multipath (wall echoes — the
-thesis hard-negative generator).
-
-Per-family science: `AUGMENTATION_STRATEGIES.md` (with core code excerpts)
-and the in-app encyclopedia (Help ▸ Scientific encyclopedia).
-
-## Install & run
+From this directory:
 
 ```bash
-pip install -e ".[gui]"
-sss-aug-studio [path/to/dataset]        # GUI (demo: sss-aug-studio demo_dataset)
-sss-aug-generate config.yaml            # headless, reproducible generation
-pip install -e ".[dev]" && PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest   # 64 tests at v0.4.0
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[gui]"        # core + GUI
+pip install -e ".[dev]"        # + pytest, ruff (for development)
 ```
 
-Requires Python ≥ 3.10. Core (everything except the GUI) has no Qt
-dependency.
+## Run
 
-## Architecture in one paragraph
+| Task | Command |
+|---|---|
+| Open the GUI | `sss-aug-studio` |
+| Open the GUI on a dataset | `sss-aug-studio path/to/dataset` |
+| Try it on the bundled demo | `sss-aug-studio demo_dataset` |
+| Generate without the GUI | `sss-aug-generate config.yaml` |
+| Same, other seed / worker count | `sss-aug-generate config.yaml --seed 7 --workers 4` |
 
-A **GUI-free core** (`core/`, `physics/`) defines the data model
-(`SonarImage` in linear intensity, layout-agnostic per-side views,
-bidirectional `FieldWarp`s so labels follow pixels exactly,
-`AcquisitionMeta` in physical units) and a deterministic SeedSequence tree
-(same seed ⇒ byte-identical datasets, independent of worker count).
-Augmentations are **one-file plugins** (`augmentations/`) that self-register;
-GUI forms, generation distributions, profiles and tests pick them up
-automatically. On top sit application services (`datasets/` YOLO indexing +
-modular metadata readers, `generation/` parallel batch engine + headless
-CLI, `profiles/`) and a PySide6 GUI (`gui/`) with debounced, stage-cached
-live preview. Details: `docs/DESIGN.md` Part 1.
+Typical workflow:
 
-## Configuration system
+1. Open a dataset in the GUI.
+2. Load a preset (`Profiles ▸ Load preset`) or add augmentations from the library.
+3. Tune parameters with the live preview.
+4. `Generate ▸ Generate augmented dataset…`: choose output folder, seed, copies per image.
+5. Optional: `Export config YAML` in that dialog, then rerun it with `sss-aug-generate`.
 
-* **Dataset conventions** — `sss_aug_dataset.yaml` at the dataset root:
-  `layout` (dual / single_port / single_starboard), `intensity_mapping`
-  (declared, never inferred: linear | log | gamma; **default assumption when
-  absent: log/dB**), `shadow_included` (boxes cover highlight + shadow;
-  default true), plus the physical acquisition values. Every field is honoured
-  at the top level or inside `meta:` — equivalent positions, top level winning
-  on conflict — and an unrecognised key warns rather than vanishing. Per-image
-  sidecar JSON overrides.
-* **Profiles** — named pipeline configurations (YAML), six bundled presets.
-  Every float parameter of an instance is either **fixed** or follows a
-  **stochastic law** (uniform / normal / log-uniform), chosen directly in
-  the Parameters form and stored with the instance; a profile is
-  deterministic iff no parameter declares a law. Seeds reproduce datasets
-  byte-for-byte in both cases.
-* **Generation config** — exported YAML consumed by the GUI dialog or the
-  `sss-aug-generate` CLI; every output dataset carries
-  `generation_manifest.json` and `statistics.md`.
+## Augmentations
 
-## Documentation
+**Geometry (exact symmetries)**
 
-- `README.md` — this overview (merged with the former `PROJECT_OVERVIEW.md`, 2026-11-18)
-- `docs/user_manual.md` — getting started in five minutes (the former `GETTING_STARTED.md`), workflow, metadata
-  format, generation guide
-- `AUGMENTATION_STRATEGIES.md` — per-family physics, math, code excerpts, rigor classification
-- `docs/DESIGN.md` — Part 1 architecture (layering, determinism, extension contract), Part 2 developer guide (add
-  a family in one file), Part 3 scientific documentation (fidelity boundaries, validation protocol), Part 4 the
-  complete equation set, Part 5 bibliography (with `sss_aug_studio/documentation/bibliography.bib`), Part 6 future
-  work
-- `docs/HISTORY.md` — release deltas 0.2.0 to 0.3.0 and later dated events
-- In-app: Help ▸ Scientific encyclopedia (per-family 7-section pages)
+| ID | Key | Effect |
+|---|---|---|
+| G1 | `mirror_across_track` | Mirror port and starboard (layout-aware) |
+| G2 | `reverse_along_track` | Reverse the ping order |
 
-## Reproducibility guarantee
+**Physics families**
 
-A generation config (YAML) + master seed reproduces a dataset
-**byte-for-byte**, independent of the number of worker processes. Every
-output dataset carries `generation_manifest.json` (full audit trail) and
-`statistics.md`.
+| ID | Key | Effect |
+|---|---|---|
+| F1 | `speckle` | Speckle and reverberation statistics (Rayleigh / K) |
+| F2 | `radiometric` | TVG residual, absorption, beam pattern |
+| F3 | `slant_geometry` | Slant range and altitude geometry |
+| F4 | `platform_motion` | Boat roll, heave, yaw, speed |
+| F5 | `ping_artifacts` | Ping loss and sensor artefacts |
+| F6 | `shadow` | Shadow and highlight modulation |
+| F7 | `seabed` | Seabed reflectivity and texture |
+| F8 | `multipath` | Shallow-water multipath (wall echoes, hard negatives) |
+
+Left out on purpose: arbitrary rotation, additive Gaussian noise, colour jitter,
+elastic warps, mixup / cutmix. They produce images a sonar cannot record.
+
+**Presets:** calm sea, moderate waves, harbour inspection, river, turbid basin, fast survey.
+Every float parameter is either fixed or drawn from a law (uniform, normal, log-uniform).
+
+## Input dataset
+
+Standard YOLO layout, flat or with `train` / `val` / `test` splits:
+
+```
+dataset/
+  data.yaml                 # class names (or dataset.yaml / data.yml)
+  sss_aug_dataset.yaml      # optional: acquisition metadata
+  images/                   # .png .jpg .jpeg .bmp .tif .tiff
+    img_001.png
+    img_001.json            # optional: per-image metadata
+  labels/
+    img_001.txt             # YOLO boxes
+```
+
+Optional `sss_aug_dataset.yaml` (each key may sit at the top level or under `meta:`):
+
+```yaml
+layout: dual               # dual | single_port | single_starboard
+intensity_mapping: log     # linear | log | gamma (log if absent)
+shadow_included: true      # boxes cover highlight + shadow
+meta:
+  altitude_m: 2.0
+  slant_range_m: 20.0
+  frequency_khz: 450
+```
+
+- A per-image `{stem}.json` (or `{stem}.meta.json`) overrides these values for that image.
+- Without metadata the tool runs in a normalised fallback mode.
+- An unknown key is ignored with a warning.
+
+## Output dataset
+
+Written to a **new** folder:
+
+| File | Content |
+|---|---|
+| originals | copied unchanged |
+| `{stem}__aug{N}.{ext}` + `.txt` | augmented images and their labels |
+| `generation_manifest.json` | full config, applied augmentations and sampled values per image |
+| `statistics.md` | application counts, parameter ranges, boxes kept / dropped |
+| `data.yaml`, `sss_aug_dataset.yaml` | copied from the input |
+
+Boxes that leave the image or fall below 60 % retention (`min_box_retention`) are dropped and logged.
+
+## Generation config (for `sss-aug-generate`)
+
+Usually exported from the GUI. Minimal hand-written example:
+
+```yaml
+dataset_path: demo_dataset
+output_path: out/demo_aug
+master_seed: 42
+copies_per_image: 3          # 1 to 20
+workers: 0                   # 0 = CPU count - 1
+specs:
+  - instance: {family: mirror_across_track}
+  - instance: {family: speckle, probability: 0.8}
+    param_distributions:
+      looks: {dist: uniform, low: 1.5, high: 6.0}
+```
+
+Other fields: `allow_combination`, `min_box_retention`, `export_mapping`
+(`auto` | `linear` | `gamma` | `log`), `include_splits`.
+
+## Tests and checks
+
+```bash
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest   # the variable is needed in a ROS-sourced shell
+pytest -m "not gui"                        # skip the Qt tests
+ruff check .
+python tools/repro_gate.py                 # same output at 1 and N workers
+```
+
+## Layout
+
+```
+sss_aug_studio/
+  core/  physics/        data model, seeded RNG, acoustics (no Qt)
+  augmentations/         one file per family
+  datasets/              YOLO reader, metadata resolution
+  generation/            batch engine, sss-aug-generate CLI
+  profiles/presets/      the six presets
+  gui/  app/             PySide6 application
+  documentation/         in-app encyclopedia, bibliography
+tests/                   pytest suite
+tools/                   repro_gate.py, docs_sync_check.py, demo builders
+demo_dataset/            four-image test fixture (see its README)
+docs/                    user manual, design, history
+```
+
+## More documentation
+
+- `docs/user_manual.md`: step-by-step use, metadata format, GUI tour
+- `AUGMENTATION_STRATEGIES.md`: physics, equations and limits of each family
+- `docs/DESIGN.md`: architecture, adding a family, scientific limits, equations, bibliography
+- `docs/HISTORY.md`: release history
+- In the app: `Help ▸ Scientific encyclopedia`
